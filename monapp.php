@@ -23,6 +23,17 @@
 			$select_city="Paris";
 		}
 		
+		$opts2 = array('http' => array(
+			'method'  => 'GET',
+			'header' => "X-Mashape-Key: Ri4j5gX4ORmshweHbjBSUUMevXWIp1i0xRujsnjCz7wW9w5zLB")); // key for the API
+		$context2  = stream_context_create($opts2);
+		$result2 = file_get_contents('https://simple-weather.p.mashape.com/weather?lat='.$latitude.'&lng='.$longitude.'', false, $context2);
+		
+		$weather=explode(' c,', $result2);
+		$weather2=explode(' at ', $weather[1]);
+		$letemps="It is ".$weather[0]." degree celsius and it's".$weather2[0]." in ".$weather2[1];
+		
+		
 		
 		$opts = array('http' => array(
 			'method'  => 'GET',
@@ -58,6 +69,10 @@
         <br/><br/>
 		<div>
 		<?php
+			if(!empty($letemps))
+			{
+				echo "<p>".$letemps."</p>";
+			}
 			if(!empty($map))
 			{
 				echo "<img src=".$map."/>";
