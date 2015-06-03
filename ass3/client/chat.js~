@@ -1,0 +1,32 @@
+var socket = io.connect('http://localhost');
+var nick;
+
+$(document).ready(function() {
+
+	$('#loginButton').click(function() {
+		var array = {};
+
+		nick = $('#nick').val();
+		array['method'] = 'login';
+		array['msg'] = nick;
+		socket.emit('loginEvent', array);		
+		$('#nick').val('');
+	});
+
+	$('#sendButton').click(function() {
+		var array = {};
+		array['user'] = nick;
+		array['msg'] = $('#msgText').val();
+		socket.emit('chat', array);
+		$('#msgText').value = '';
+	});
+
+	socket.on('loginEvent', function(data) {
+		$('#chatArea').append(data.nick + ' joined...<br />');
+	});
+
+	socket.on('chatMsg', function(data) {
+		$('#chatArea').append(data.user + ': ' + data.msg + '<br />');	
+	});
+
+});
