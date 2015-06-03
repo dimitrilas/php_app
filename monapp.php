@@ -73,6 +73,10 @@
 			{
 				echo "<p>".$letemps."</p>";
 			}
+			else
+			{
+				echo "<p>problem api</p>";
+			}
 			if(!empty($map))
 			{
 				echo "<img src=".$map."/>";
