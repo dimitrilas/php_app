@@ -1,77 +1,70 @@
 <?php
-	if(!empty($_POST[city]))
+
+	//if the user click on check, the page is called again and this part is 'doing his job'
+	if(isset($_GET['city']))
 	{
-		double latitude, longitude;
-		string select_city="";
-		if($_POST[city] == 1)
+		if($_GET['city'] == "1")
 		{
-			latitude=51.51;
-			longitude=-0.13;
-			select_city="London";
+			$latitude=51.51;
+			$longitude=-0.13;
+			$select_city="London";
+			
 		}
-		else if($_POST[city] == 2)
+		else if($_GET['city'] == "2")
 		{
-			latitude=59.325;
-			longitude=18.07;
-			select_city="Stockholm";
+			$latitude=59.325;
+			$longitude=18.07;
+			$select_city="Stockholm";
 		}
 		else
 		{
-			latitude=48.86;
-			longitude=2.34;
-			select_city="Paris";
-		}
-		
-		$req2 = new HttpRequest('https://simple-weather.p.mashape.com/weather?lat='+$latitude+'&lng='+$longitude+'', HttpRequest::METH_GET);
-		$req2->setHeaders(array('X-Mashape-Key'  => 'Ri4j5gX4ORmshweHbjBSUUMevXWIp1i0xRujsnjCz7wW9w5zLB'));
-		try {
-			$req2->send();
-			if ($req2->getResponseCode() == 200) {
-				echo $req2->getResponseBody();
-				$resp2=$req2->getResponseBody();
-			}
-		} catch (HttpException $ex) {
-			echo $ex;
+			$latitude=48.86;
+			$longitude=2.34;
+			$select_city="Paris";
 		}
 		
 		
+		$opts = array('http' => array(
+			'method'  => 'GET',
+			'header' => "X-Mashape-Key: 87db9f8219947bdac7068c479acfccdd")); // key for the open weather map API
+		$context  = stream_context_create($opts);
+		//get the result of the open weather map api
+		$result = file_get_contents('http://api.openweathermap.org/data/2.5/weather?q='.$select_city.'', false, $context);
+		// just explode the array in order to get only the icon name for the marker
+		$final=explode("icon\":\"", $result);
+		$final=explode("\"}", $final[1]);
 		
-		$req = new HttpRequest('http://api.openweathermap.org/data/2.5/weather?q='+$select_city+'', HttpRequest::METH_GET);
-		$req->setHeaders(array('X-Mashape-Key'  => '87db9f8219947bdac7068c479acfccdd'));
-		try {
-			$req->send();
-			if ($req->getResponseCode() == 200) {
-				echo $req->getResponseBody();
-				$resp=$req->getResponseBody();
-			}
-		} catch (HttpException $ex) {
-			echo $ex;
-		}
-		
-		$map = new GMapsStaticMap();
-		$map->set_center($latitude, $longitude);
-		$map->set_size(600, 400);
-		$map->set_zoom(12);
-		//$map->add_markers('http://openweathermap.org/img/w/'+$resp['weather'][0].icon+'.png%7C'+$select_city);
-		
+		// call for a static google map with a marker based on the icon previously found.
+		$map="http://maps.googleapis.com/maps/api/staticmap?center=".$select_city."&zoom=12&size=400x400&maptype=roadmap&markers=icon:http://openweathermap.org/img/w/".$final[0].".png%7C".$select_city;
 }
 
 ?>
-
+<!DOCTYPE html>
 <html>
-  <body>
-    <form action="monapp.php" method="post">
-     <select id="city">
-            <option value="1" selected="selected">London</option>
-            <option value="2">Stockholm</option>
-            <option value="3">Paris</option>
-        </select>
+  <head>
+	<meta charset="UTF-8">
+	<title>my php app</title>
+  </head>
+   <body>
+	<form action="monapp.php" method="GET">
+		 <select name="city">
+			<option value="1" selected="selected">London</option>
+			<option value="2">Stockholm</option>
+			<option value="3">Paris</option>
+		</select>
 		<br />
 		<input type="submit" value="Check"/>
+	</form>
         <br/><br/>
-        <div id="weather_in_city"></div><br/><br/>
-		<div><img src="<?php if(!empty($map)) {echo $map->get_url();}?>"/></div>
-    </form>
+		<div>
+		<?php
+			if(!empty($map))
+			{
+				echo "<img src=".$map."/>";
+			}
+		?>
+		</div>
+    
   </body>
 </html>
 
